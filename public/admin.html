@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel — Village Database</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --saffron: #E07B39; --deep: #6B2D0F; --green: #2E7D32;
+      --green-lt: #43A047; --cream: #FDF6EC; --white: #fff;
+      --border: #E0D3C0; --text: #2C1A0E; --subtext: #6B4C30;
+      --red: #C62828; --blue: #1565C0; --shadow: 0 4px 24px rgba(107,45,15,0.10);
+      --sidebar: #1C1C1C;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Poppins',sans-serif; background:#F5F0EB; color:var(--text); min-height:100vh; }
+
+    /* LOGIN OVERLAY */
+    #loginOverlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, var(--deep) 0%, var(--saffron) 100%);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .login-box {
+      background: #fff; border-radius: 20px; padding: 40px;
+      width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .login-box h2 { font-size: 1.4rem; color: var(--deep); margin-bottom: 6px; }
+    .login-box p  { color: var(--subtext); font-size: 0.88rem; margin-bottom: 28px; }
+    .login-box input {
+      width:100%; padding:12px 16px; border:1.5px solid var(--border);
+      border-radius:10px; font-family:'Poppins',sans-serif;
+      font-size:0.95rem; margin-bottom:14px; outline:none;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--saffron); }
+    .btn-login {
+      width:100%; padding:13px; background:linear-gradient(135deg,var(--deep),var(--saffron));
+      color:#fff; border:none; border-radius:10px; font-size:1rem; font-weight:600;
+      cursor:pointer; transition: opacity 0.2s;
+    }
+    .btn-login:hover { opacity:0.9; }
+    #loginErr { color:var(--red); font-size:0.85rem; margin-top:10px; }
+
+    /* LAYOUT */
+    .layout { display:flex; min-height:100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px; background: var(--sidebar);
+      padding: 0; flex-shrink: 0;
+      display: flex; flex-direction: column;
+    }
+    .sidebar-brand {
+      padding: 24px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-brand h2 { color:#fff; font-size:1rem; font-weight:700; }
+    .sidebar-brand p  { color:rgba(255,255,255,0.45); font-size:0.78rem; margin-top:3px; }
+    .sidebar nav { padding: 12px 0; flex:1; }
+    .nav-item {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 20px;
+      color:rgba(255,255,255,0.6);
+      cursor:pointer; font-size:0.9rem;
+      transition: background 0.15s, color 0.15s;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background:rgba(255,255,255,0.06); color:#fff; }
+    .nav-item.active { background:rgba(224,123,57,0.15); color:var(--saffron); border-left-color:var(--saffron); }
+    .nav-item .icon { font-size:1.1rem; width:22px; text-align:center; }
+    .sidebar-footer {
+      padding:16px 20px; border-top:1px solid rgba(255,255,255,0.08);
+    }
+    .btn-logout {
+      width:100%; padding:10px; background:rgba(198,40,40,0.15);
+      color:#EF9A9A; border:1px solid rgba(198,40,40,0.3);
+      border-radius:8px; cursor:pointer; font-size:0.85rem;
+      font-family:'Poppins',sans-serif; transition: background 0.2s;
+    }
+    .btn-logout:hover { background:rgba(198,40,40,0.3); }
+
+    /* MAIN CONTENT */
+    .main-content { flex:1; overflow:auto; padding:28px; }
+
+    /* PAGE TITLE */
+    .page-title { margin-bottom:24px; }
+    .page-title h1 { font-size:1.4rem; font-weight:700; color:var(--text); }
+    .page-title p  { color:var(--subtext); font-size:0.88rem; margin-top:3px; }
+
+    /* STATS CARDS */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+    .stat-card {
+      background:var(--white); border-radius:14px; padding:20px;
+      border:1px solid var(--border); box-shadow:var(--shadow);
+    }
+    .stat-card .label { font-size:0.78rem; color:var(--subtext); font-weight:600; text-transform:uppercase; }
+    .stat-card .value { font-size:2rem; font-weight:700; margin-top:4px; }
+    .stat-card.total .value { color:var(--deep); }
+    .stat-card.male  .value { color:var(--blue); }
+    .stat-card.female .value { color:#AD1457; }
+    .stat-card.married .value { color:var(--green); }
+
+    /* TOOLBAR */
+    .toolbar {
+      background:var(--white); border-radius:14px; padding:16px 20px;
+      border:1px solid var(--border); margin-bottom:20px;
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+    }
+    .search-box {
+      flex:1; min-width:200px; padding:10px 16px;
+      border:1.5px solid var(--border); border-radius:10px;
+      font-family:'Poppins',sans-serif; font-size:0.9rem; outline:none;
+    }
+    .search-box:focus { border-color:var(--saffron); }
+    .filter-select {
+      padding:10px 14px; border:1.5px solid var(--border);
+      border-radius:10px; font-family:'Poppins',sans-serif;
+      font-size:0.88rem; cursor:pointer; outline:none;
+    }
+    .btn { padding:10px 18px; border-radius:10px; border:none; cursor:pointer; font-family:'Poppins',sans-serif; font-weight:600; font-size:0.88rem; transition: all 0.15s; }
+    .btn-primary { background:var(--saffron); color:#fff; }
+    .btn-primary:hover { background:var(--deep); }
+    .btn-success { background:var(--green); color:#fff; }
+    .btn-success:hover { background:#1B5E20; }
+    .btn-danger  { background:var(--red); color:#fff; }
+    .btn-danger:hover { background:#B71C1C; }
+    .btn-info    { background:var(--blue); color:#fff; }
+    .btn-info:hover { background:#0D47A1; }
+    .btn-sm { padding:6px 12px; font-size:0.8rem; border-radius:7px; }
+
+    /* TABLE */
+    .table-card { background:var(--white); border-radius:14px; border:1px solid var(--border); box-shadow:var(--shadow); overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th { background:#F9F5F0; padding:12px 16px; text-align:left; font-size:0.78rem; font-weight:700; color:var(--subtext); text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border); }
+    td { padding:12px 16px; border-bottom:1px solid #F0EBE3; font-size:0.88rem; vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#FDFAF6; }
+    .badge {
+      display:inline-block; padding:3px 10px; border-radius:20px;
+      font-size:0.75rem; font-weight:600;
+    }
+    .badge-male   { background:#E3F2FD; color:#1565C0; }
+    .badge-female { background:#FCE4EC; color:#AD1457; }
+    .badge-other  { background:#F3E5F5; color:#6A1B9A; }
+    .actions { display:flex; gap:6px; }
+    #memberCount { color:var(--subtext); font-size:0.85rem; margin-left:auto; }
+
+    /* MODAL */
+    .modal-overlay {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.55); z-index:1000;
+      align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal {
+      background:#fff; border-radius:20px; width:100%;
+      max-width:700px; max-height:90vh; overflow:auto;
+      box-shadow:0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      padding:20px 24px; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center;
+      position:sticky; top:0; background:#fff; z-index:1;
+    }
+    .modal-header h3 { font-size:1.1rem; color:var(--deep); }
+    .btn-close { background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--subtext); line-height:1; }
+    .btn-close:hover { color:var(--red); }
+    .modal-body { padding:24px; }
+    .modal-footer { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+
+    /* EDIT FORM GRID */
+    .edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .edit-grid .full { grid-column:1/-1; }
+    .field { display:flex; flex-direction:column; gap:5px; }
+    .field label { font-size:0.78rem; font-weight:600; color:var(--subtext); text-transform:uppercase; }
+    .field input, .field select, .field textarea {
+      padding:9px 12px; border:1.5px solid var(--border); border-radius:8px;
+      font-family:'Poppins',sans-serif; font-size:0.88rem; outline:none;
+    }
+    .field input:focus, .field select:focus { border-color:var(--saffron); }
+
+    /* RELATION SECTION */
+    .relation-list { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:16px; }
+    .rel-card {
+      background:#F9F5F0; border-radius:10px; padding:12px;
+      border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;
+    }
+    .rel-info .name { font-weight:600; font-size:0.9rem; }
+    .rel-info .type { color:var(--subtext); font-size:0.78rem; margin-top:2px; }
+    .rel-badge { background:var(--saffron); color:#fff; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; }
+    .add-relation-form { background:#F9F5F0; border-radius:12px; padding:16px; margin-top:16px; border:1px dashed var(--border); }
+    .add-relation-form h4 { font-size:0.9rem; color:var(--deep); margin-bottom:12px; }
+    .rel-form-grid { display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:end; }
+
+    /* MEMBER PROFILE */
+    .profile-header { display:flex; gap:20px; align-items:flex-start; margin-bottom:20px; }
+    .profile-avatar {
+      width:72px; height:72px; border-radius:50%;
+      background:linear-gradient(135deg,var(--saffron),var(--deep));
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.8rem; flex-shrink:0; color:#fff;
+    }
+    .profile-name { font-size:1.2rem; font-weight:700; color:var(--text); }
+    .profile-sub  { color:var(--subtext); font-size:0.88rem; margin-top:3px; }
+    .detail-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .detail-item .d-label { font-size:0.75rem; color:var(--subtext); font-weight:600; text-transform:uppercase; }
+    .detail-item .d-val   { font-size:0.9rem; color:var(--text); margin-top:3px; font-weight:500; }
+
+    /* TOAST */
+    #toast {
+      position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px);
+      background:var(--text); color:#fff; padding:12px 26px; border-radius:50px;
+      font-size:0.9rem; font-weight:500; transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      z-index:9999; white-space:nowrap; box-shadow:0 8px 30px rgba(0,0,0,0.25);
+    }
+    #toast.show { transform:translateX(-50%) translateY(0); }
+    #toast.s { background:var(--green); }
+    #toast.e { background:var(--red); }
+
+    /* TABS */
+    .tabs { display:flex; gap:4px; background:#F0EBE3; border-radius:10px; padding:4px; margin-bottom:20px; }
+    .tab { flex:1; padding:9px; text-align:center; border-radius:8px; cursor:pointer; font-size:0.88rem; font-weight:600; color:var(--subtext); transition:all 0.15s; }
+    .tab.active { background:#fff; color:var(--deep); box-shadow:0 2px 8px rgba(107,45,15,0.12); }
+
+    /* PAGE SECTIONS */
+    .page-section { display:none; }
+    .page-section.active { display:block; }
+
+    @media (max-width:768px) {
+      .stats-grid { grid-template-columns:1fr 1fr; }
+      .layout { flex-direction:column; }
+      .sidebar { width:100%; flex-direction:row; }
+      .detail-grid { grid-template-columns:1fr 1fr; }
+      .edit-grid { grid-template-columns:1fr; }
+      .relation-list { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div style="font-size:3rem;margin-bottom:12px">🔐</div>
+    <h2>Admin Login</h2>
+    <p>Village Database Admin Panel</p>
+    <input type="text" id="uname" placeholder="Username" value="admin" />
+    <input type="password" id="upass" placeholder="Password" value="" />
+    <button class="btn-login" onclick="doLogin()">Login करें</button>
+    <div id="loginErr"></div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout" id="appLayout" style="display:none">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <h2>🏘️ Village DB</h2>
+      <p>Admin Panel</p>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span class="icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('members')">
+        <span class="icon">👥</span> All Members
+      </div>
+      <div class="nav-item" onclick="showPage('add')">
+        <span class="icon">➕</span> Add Member
+      </div>
+      <div class="nav-item" onclick="window.open('/','_blank')">
+        <span class="icon">📝</span> Public Form
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <!-- DASHBOARD PAGE -->
+    <div class="page-section active" id="page-dashboard">
+      <div class="page-title">
+        <h1>📊 Dashboard</h1>
+        <p>Village database ka overview</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card total">
+          <div class="label">Total Members</div>
+          <div class="value" id="statTotal">—</div>
+        </div>
+        <div class="stat-card male">
+          <div class="label">पुरुष (Male)</div>
+          <div class="value" id="statMale">—</div>
+        </div>
+        <div class="stat-card female">
+          <div class="label">महिला (Female)</div>
+          <div class="value" id="statFemale">—</div>
+        </div>
+        <div class="stat-card married">
+          <div class="label">विवाहित (Married)</div>
+          <div class="value" id="statMarried">—</div>
+        </div>
+      </div>
+      <div class="table-card">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-weight:600;font-size:0.95rem">
+          📍 Mohalla-wise Members
+        </div>
+        <table>
+          <thead><tr><th>Mohalla</th><th>Members</th></tr></thead>
+          <tbody id="mohallaTable"><tr><td colspan="2" style="text-align:center;color:var(--subtext)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MEMBERS PAGE -->
+    <div class="page-section" id="page-members">
+      <div class="page-title">
+        <h1>👥 All Members</h1>
+        <p>Saare registered members ki list</p>
+      </div>
+      <div class="toolbar">
+        <input class="search-box" id="searchInput" placeholder="🔍 Naam, mobile, pita ka naam..." oninput="loadMembers()" />
+        <select class="filter-select" id="genderFilter" onchange="loadMembers()">
+          <option value="">All Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+        <span id="memberCount">Loading...</span>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>नाम (Name)</th><th>पिता</th><th>उम्र</th>
+              <th>Gender</th><th>Mobile</th><th>Mohalla</th>
+              <th>Occupation</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="membersTable">
+            <tr><td colspan="9" style="text-align:center;padding:30px;color:var(--subtext)">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADD MEMBER PAGE -->
+    <div class="page-section" id="page-add">
+      <div class="page-title">
+        <h1>➕ Add Member</h1>
+        <p>Nayi entry add karein</p>
+      </div>
+      <div style="background:var(--white);border-radius:14px;border:1px solid var(--border);padding:24px;">
+        <p style="color:var(--subtext)">👉 Public registration form use karein ya neeche quick add karein.</p>
+        <div style="margin-top:16px;display:flex;gap:12px">
+          <a href="/" target="_blank" class="btn btn-primary" style="text-decoration:none;">📝 Open Registration Form</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main-content -->
+</div><!-- end layout -->
+
+<!-- ===== VIEW MEMBER MODAL ===== -->
+<div class="modal-overlay" id="viewModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>👤 Member Details</h3>
+      <button class="btn-close" onclick="closeModal('viewModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- TABS -->
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'tab-profile')">📋 Profile</div>
+        <div class="tab" onclick="switchTab(this,'tab-relations')">👨‍👩‍👧 Family Relations</div>
+      </div>
+
+      <!-- PROFILE TAB -->
+      <div id="tab-profile">
+        <div class="profile-header">
+          <div class="profile-avatar" id="viewAvatar">👤</div>
+          <div>
+            <div class="profile-name" id="viewName">—</div>
+            <div class="profile-sub" id="viewSub">—</div>
+          </div>
+        </div>
+        <div class="detail-grid" id="viewDetails"></div>
+      </div>
+
+      <!-- RELATIONS TAB -->
+      <div id="tab-relations" style="display:none">
+        <div id="relationsList"></div>
+        <!-- Add Relation Form -->
+        <div class="add-relation-form">
+          <h4>➕ Nayi Relation Add Karein</h4>
+          <div class="rel-form-grid">
+            <div class="field">
+              <label>Member</label>
+              <select id="relMemberId">
+                <option value="">— Member chunein —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Relation Type</label>
+              <select id="relType">
+                <option value="father">Father (पिता)</option>
+                <option value="mother">Mother (माता)</option>
+                <option value="son">Son (बेटा)</option>
+                <option value="daughter">Daughter (बेटी)</option>
+                <option value="husband">Husband (पति)</option>
+                <option value="wife">Wife (पत्नी)</option>
+                <option value="brother">Brother (भाई)</option>
+                <option value="sister">Sister (बहन)</option>
+                <option value="grandfather">Grandfather (दादा/नाना)</option>
+                <option value="grandmother">Grandmother (दादी/नानी)</option>
+                <option value="grandson">Grandson (पोता)</option>
+                <option value="granddaughter">Granddaughter (पोती)</option>
+                <option value="uncle">Uncle (चाचा/मामा)</option>
+                <option value="aunt">Aunt (चाची/मामी)</option>
+                <option value="nephew">Nephew (भतीजा)</option>
+                <option value="niece">Niece (भतीजी)</option>
+                <option value="cousin">Cousin</option>
+              </select>
+            </div>
+            <button class="btn btn-success" onclick="addRelation()" style="height:40px;align-self:end">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-info" onclick="openEditModal()">✏️ Edit</button>
+      <button class="btn btn-danger" onclick="deleteMember()">🗑️ Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EDIT MEMBER MODAL ===== -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✏️ Edit Member</h3>
+      <button class="btn-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="edit-grid" id="editForm"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('editModal')" style="background:#f0f0f0">Cancel</button>
+      <button class="btn btn-success" onclick="saveEdit()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// =====================
+// STATE
+// =====================
+let currentMemberId = null;
+let allMembersCache = [];
+const EDIT_FIELDS = [
+  {name:'full_name',    label:'पूरा नाम',        type:'text'},
+  {name:'father_name',  label:'पिता का नाम',     type:'text'},
+  {name:'mother_name',  label:'माता का नाम',     type:'text'},
+  {name:'date_of_birth',label:'जन्म तिथि',       type:'date'},
+  {name:'age',          label:'उम्र',            type:'number'},
+  {name:'gender',       label:'Gender',          type:'select', opts:['Male','Female','Other']},
+  {name:'marital_status',label:'Marital Status', type:'select', opts:['Single','Married','Widowed','Divorced']},
+  {name:'blood_group',  label:'Blood Group',     type:'select', opts:['','A+','A-','B+','B-','O+','O-','AB+','AB-']},
+  {name:'mobile',       label:'Mobile',          type:'tel'},
+  {name:'alternate_mobile',label:'Alt. Mobile',  type:'tel'},
+  {name:'email',        label:'Email',           type:'email'},
+  {name:'education',    label:'Education',       type:'text'},
+  {name:'occupation',   label:'Occupation',      type:'text'},
+  {name:'income',       label:'Income',          type:'text'},
+  {name:'aadhar_no',    label:'Aadhar No.',      type:'text'},
+  {name:'voter_id',     label:'Voter ID',        type:'text'},
+  {name:'house_no',     label:'House No.',       type:'text'},
+  {name:'mohalla',      label:'Mohalla',         type:'text'},
+  {name:'village',      label:'Village',         type:'text'},
+  {name:'tehsil',       label:'Tehsil',          type:'text'},
+  {name:'district',     label:'District',        type:'text'},
+  {name:'state',        label:'State',           type:'text'},
+  {name:'pincode',      label:'Pincode',         type:'text'},
+  {name:'notes',        label:'Notes',           type:'textarea', full:true}
+];
+
+// =====================
+// LOGIN
+// =====================
+async function doLogin() {
+  const u = document.getElementById('uname').value.trim();
+  const p = document.getElementById('upass').value.trim();
+  if (!u || !p) { document.getElementById('loginErr').textContent='Username & password daalen!'; return; }
+  try {
+    const r = await fetch('/api/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username:u, password:p})
+    });
+    const j = await r.json();
+    if (j.success) {
+      document.getElementById('loginOverlay').style.display='none';
+      document.getElementById('appLayout').style.display='flex';
+      loadStats(); loadMembers();
+    } else {
+      document.getElementById('loginErr').textContent = j.error;
+    }
+  } catch { document.getElementById('loginErr').textContent='Server se connect nahi hua!'; }
+}
+function logout() {
+  document.getElementById('appLayout').style.display='none';
+  document.getElementById('loginOverlay').style.display='flex';
+}
+
+// =====================
+// NAVIGATION
+// =====================
+function showPage(page) {
+  document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (page === 'members') loadMembers();
+  if (page === 'dashboard') loadStats();
+}
+
+// =====================
+// STATS
+// =====================
+async function loadStats() {
+  const r = await fetch('/api/stats');
+  const j = await r.json();
+  if (!j.success) return;
+  document.getElementById('statTotal').textContent   = j.data.total;
+  document.getElementById('statMale').textContent    = j.data.male;
+  document.getElementById('statFemale').textContent  = j.data.female;
+  document.getElementById('statMarried').textContent = j.data.married;
+  const tbody = document.getElementById('mohallaTable');
+  tbody.innerHTML = (j.data.mohallas||[]).map(m =>
+    `<tr><td>${m.mohalla||'—'}</td><td><strong>${m.count}</strong></td></tr>`
+  ).join('') || '<tr><td colspan="2" style="text-align:center;color:var(--subtext)">No data</td></tr>';
+}
+
+// =====================
+// LOAD MEMBERS
+// =====================
+async function loadMembers() {
+  const s = document.getElementById('searchInput')?.value||'';
+  const g = document.getElementById('genderFilter')?.value||'';
+  let url = `/api/members?search=${encodeURIComponent(s)}&gender=${g}`;
+  const r = await fetch(url);
+  const j = await r.json();
+  if (!j.success) return;
+  allMembersCache = j.data;
+  document.getElementById('memberCount').textContent = `${j.total} members`;
+  const tbody = document.getElementById('membersTable');
+  if (!j.data.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--subtext)">Koi member nahi mila</td></tr>';
+    return;
+  }
+  tbody.innerHTML = j.data.map(m => `
+    <tr>
+      <td><strong>#${m.id}</strong></td>
+      <td><strong>${m.full_name}</strong></td>
+      <td>${m.father_name||'—'}</td>
+      <td>${m.age||'—'}</td>
+      <td><span class="badge badge-${m.gender?.toLowerCase()||'other'}">${m.gender||'—'}</span></td>
+      <td>${m.mobile||'—'}</td>
+      <td>${m.mohalla||'—'}</td>
+      <td>${m.occupation||'—'}</td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-info btn-sm" onclick="viewMember(${m.id})">👁️ View</button>
+          <button class="btn btn-primary btn-sm" onclick="openEditById(${m.id})">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteById(${m.id})">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// =====================
+// VIEW MEMBER
+// =====================
+async function viewMember(id) {
+  currentMemberId = id;
+  const r = await fetch(`/api/members/${id}`);
+  const j = await r.json();
+  if (!j.success) { toast('Member nahi mila!','e'); return; }
+  const m = j.data;
+
+  // Avatar & name
+  document.getElementById('viewAvatar').textContent = m.gender==='Female'?'👩':m.gender==='Male'?'👨':'👤';
+  document.getElementById('viewName').textContent   = m.full_name;
+  document.getElementById('viewSub').textContent    = [m.occupation,m.village].filter(Boolean).join(' | ');
+
+  // Detail grid
+  const fields = [
+    ['पिता',m.father_name],['माता',m.mother_name],['उम्र',m.age?m.age+' वर्ष':'—'],
+    ['Gender',m.gender],['Status',m.marital_status],['Blood Group',m.blood_group||'—'],
+    ['Mobile',m.mobile||'—'],['Alt. Mobile',m.alternate_mobile||'—'],['Email',m.email||'—'],
+    ['Education',m.education||'—'],['Occupation',m.occupation||'—'],['Income',m.income||'—'],
+    ['Aadhar',m.aadhar_no||'—'],['Voter ID',m.voter_id||'—'],['DOB',m.date_of_birth?m.date_of_birth.split('T')[0]:'—'],
+    ['House No.',m.house_no||'—'],['Mohalla',m.mohalla||'—'],['Village',m.village||'—'],
+    ['Tehsil',m.tehsil||'—'],['District',m.district||'—'],['State',m.state||'—']
+  ];
+  document.getElementById('viewDetails').innerHTML = fields.map(([l,v])=>`
+    <div class="detail-item">
+      <div class="d-label">${l}</div>
+      <div class="d-val">${v||'—'}</div>
+    </div>`).join('');
+
+  // Load relations
+  loadRelations(id);
+
+  // Populate relation member dropdown
+  const sel = document.getElementById('relMemberId');
+  sel.innerHTML = '<option value="">— Member chunein —</option>' +
+    allMembersCache.filter(x=>x.id!==id).map(x=>`<option value="${x.id}">${x.full_name} (#${x.id})</option>`).join('');
+
+  openModal('viewModal');
+}
+
+// =====================
+// RELATIONS
+// =====================
+async function loadRelations(id) {
+  const r = await fetch(`/api/members/${id}/relations`);
+  const j = await r.json();
+  const container = document.getElementById('relationsList');
+  if (!j.success || !j.data.length) {
+    container.innerHTML = '<p style="color:var(--subtext);font-size:0.88rem;text-align:center;padding:12px">Koi relation nahi hai abhi</p>';
+    return;
+  }
+  container.innerHTML = `<div class="relation-list">` + j.data.map(rel=>`
+    <div class="rel-card">
+      <div class="rel-info">
+        <div class="name">${rel.full_name}</div>
+        <div class="type">Age: ${rel.age||'—'} | ${rel.occupation||'—'}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span class="rel-badge">${rel.relation_type}</span>
+        <button class="btn btn-danger btn-sm" onclick="removeRelation(${rel.relation_id})">✕</button>
+      </div>
+    </div>`).join('') + `</div>`;
+}
+
+async function addRelation() {
+  const related_id = document.getElementById('relMemberId').value;
+  const relation_type = document.getElementById('relType').value;
+  if (!related_id) { toast('Pehle member chunein!','e'); return; }
+  const r = await fetch('/api/relations', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({member_id: currentMemberId, related_id, relation_type})
+  });
+  const j = await r.json();
+  toast(j.success ? j.message : j.error, j.success?'s':'e');
+  if (j.success) loadRelations(currentMemberId);
+}
+
+async function removeRelation(relId) {
+  if (!confirm('Yeh relation hatayein?')) return;
+  const r = await fetch(`/api/relations/${relId}`, {method:'DELETE'});
+  const j = await r.json();
+  toast(j.success?j.message:j.error, j.success?'s':'e');
+  if (j.success) loadRelations(currentMemberId);
+}
+
+// =====================
+// EDIT MEMBER
+// =====================
+async function openEditById(id) {
+  currentMemberId = id;
+  const r = await fetch(`/api/members/${id}`);
+  const j = await r.json();
+  if (!j.success) { toast('Member nahi mila!','e'); return; }
+  renderEditForm(j.data);
+  openModal('editModal');
+}
+function openEditModal() {
+  closeModal('viewModal');
+  openEditById(currentMemberId);
+}
+
+function renderEditForm(data) {
+  document.getElementById('editForm').innerHTML = EDIT_FIELDS.map(f => {
+    const val = data[f.name]||'';
+    const cls = f.full ? 'field full' : 'field';
+    if (f.type==='select') {
+      const opts = f.opts.map(o=>`<option value="${o}" ${o==val?'selected':''}>${o||'— Select —'}</option>`).join('');
+      return `<div class="${cls}"><label>${f.label}</label><select id="ef_${f.name}">${opts}</select></div>`;
+    }
+    if (f.type==='textarea') {
+      return `<div class="${cls}"><label>${f.label}</label><textarea id="ef_${f.name}" rows="3">${val}</textarea></div>`;
+    }
+    const displayVal = f.type==='date' && val ? val.split('T')[0] : val;
+    return `<div class="${cls}"><label>${f.label}</label><input type="${f.type}" id="ef_${f.name}" value="${displayVal}" /></div>`;
+  }).join('');
+}
+
+async function saveEdit() {
+  const updates = {};
+  EDIT_FIELDS.forEach(f => {
+    const el = document.getElementById(`ef_${f.name}`);
+    if (el) updates[f.name] = el.value;
+  });
+  const r = await fetch(`/api/members/${currentMemberId}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(updates)
+  });
+  const j = await r.json();
+  toast(j.success?j.message:j.error, j.success?'s':'e');
+  if (j.success) { closeModal('editModal'); loadMembers(); loadStats(); }
+}
+
+// =====================
+// DELETE
+// =====================
+async function deleteMember() {
+  if (!confirm('Kya aap sach mein yeh member delete karna chahte hain?')) return;
+  deleteById(currentMemberId);
+  closeModal('viewModal');
+}
+async function deleteById(id) {
+  if (!confirm('Delete karein?')) return;
+  const r = await fetch(`/api/members/${id}`, {method:'DELETE'});
+  const j = await r.json();
+  toast(j.success?j.message:j.error, j.success?'s':'e');
+  if (j.success) { loadMembers(); loadStats(); }
+}
+
+// =====================
+// UTILS
+// =====================
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function switchTab(el, tabId) {
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-profile').style.display   = tabId==='tab-profile'?'block':'none';
+  document.getElementById('tab-relations').style.display = tabId==='tab-relations'?'block':'none';
+}
+const toast = (msg,type='s') => {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`show ${type}`;
+  setTimeout(()=>{t.className='';},3000);
+};
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.classList.remove('open'); });
+});
+
+// Enter key for login
+document.getElementById('upass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>सदस्य खोजें — GramParichay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --saffron: #E07B39; --deep: #6B2D0F; --green: #2E7D32;
+      --cream: #FDF6EC; --white: #fff;
+      --border: #D9C5A8; --text: #2C1A0E; --subtext: #6B4C30;
+      --shadow: 0 4px 24px rgba(107,45,15,0.10);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Poppins',sans-serif; background:var(--cream); color:var(--text); min-height:100vh; }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, var(--deep) 0%, var(--saffron) 100%);
+      padding: 0; position: relative; overflow: hidden;
+    }
+    header::before {
+      content:''; position:absolute; inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M30 0L60 30L30 60L0 30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .header-inner {
+      max-width:900px; margin:0 auto; padding:28px 24px;
+      display:flex; align-items:center; gap:18px; position:relative; z-index:1;
+    }
+    .header-icon {
+      width:64px; height:64px; background:rgba(255,255,255,0.15);
+      border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-size:32px; flex-shrink:0; border:2px solid rgba(255,255,255,0.3);
+    }
+    header h1 { font-family:'Tiro Devanagari Hindi',serif; font-size:1.7rem; color:#fff; }
+    header p  { color:rgba(255,255,255,0.85); font-size:0.9rem; margin-top:4px; }
+    .nav-links { margin-left:auto; display:flex; gap:12px; flex-shrink:0; }
+    .nav-links a {
+      background:rgba(255,255,255,0.2); color:#fff; text-decoration:none;
+      padding:8px 18px; border-radius:20px; font-size:0.85rem; font-weight:600;
+      border:1px solid rgba(255,255,255,0.3); transition:background 0.2s;
+    }
+    .nav-links a:hover { background:rgba(255,255,255,0.35); }
+
+    /* MAIN */
+    main { max-width:900px; margin:0 auto; padding:36px 24px 60px; }
+
+    /* SEARCH BOX */
+    .search-card {
+      background:var(--white); border-radius:20px; padding:28px;
+      box-shadow:var(--shadow); border:1px solid var(--border); margin-bottom:28px;
+    }
+    .search-card h2 { font-size:1.1rem; color:var(--deep); margin-bottom:16px; }
+    .search-row { display:flex; gap:12px; }
+    .search-input {
+      flex:1; padding:13px 18px;
+      border:2px solid var(--border); border-radius:12px;
+      font-family:'Poppins',sans-serif; font-size:1rem;
+      outline:none; transition:border-color 0.2s;
+    }
+    .search-input:focus { border-color:var(--saffron); }
+    .btn-search {
+      padding:13px 28px; background:linear-gradient(135deg,var(--deep),var(--saffron));
+      color:#fff; border:none; border-radius:12px; font-size:0.95rem;
+      font-weight:700; cursor:pointer; font-family:'Poppins',sans-serif;
+      transition:opacity 0.2s; white-space:nowrap;
+    }
+    .btn-search:hover { opacity:0.9; }
+    .filter-row { display:flex; gap:10px; margin-top:12px; }
+    .filter-chip {
+      padding:7px 16px; border-radius:20px; border:1.5px solid var(--border);
+      background:#FAFAFA; font-family:'Poppins',sans-serif; font-size:0.82rem;
+      cursor:pointer; font-weight:600; color:var(--subtext); transition:all 0.15s;
+    }
+    .filter-chip.active { background:var(--saffron); color:#fff; border-color:var(--saffron); }
+
+    /* RESULTS */
+    #resultCount { color:var(--subtext); font-size:0.88rem; margin-bottom:14px; }
+
+    .members-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+
+    .member-card {
+      background:var(--white); border-radius:16px; padding:20px;
+      border:1px solid var(--border); box-shadow:var(--shadow);
+      cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;
+      display:flex; gap:14px; align-items:flex-start;
+    }
+    .member-card:hover { transform:translateY(-3px); box-shadow:0 8px 30px rgba(107,45,15,0.15); }
+
+    .member-avatar {
+      width:52px; height:52px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,var(--saffron),var(--deep));
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.4rem; color:#fff;
+    }
+    .member-avatar.female { background:linear-gradient(135deg,#E91E8C,#AD1457); }
+
+    .member-info .name   { font-size:1rem; font-weight:700; color:var(--text); }
+    .member-info .father { font-size:0.82rem; color:var(--subtext); margin-top:3px; }
+    .member-info .tags   { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+    .tag {
+      padding:3px 10px; border-radius:20px; font-size:0.73rem; font-weight:600;
+    }
+    .tag-age      { background:#FFF3E0; color:#E65100; }
+    .tag-occ      { background:#E8F5E9; color:#2E7D32; }
+    .tag-mohalla  { background:#E3F2FD; color:#1565C0; }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align:center; padding:60px 20px;
+      background:var(--white); border-radius:20px;
+      border:1px solid var(--border);
+    }
+    .empty-state .icon { font-size:3rem; margin-bottom:12px; }
+    .empty-state h3    { font-size:1.1rem; color:var(--text); }
+    .empty-state p     { color:var(--subtext); font-size:0.88rem; margin-top:6px; }
+
+    /* MODAL */
+    .modal-overlay {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.55); z-index:1000;
+      align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal {
+      background:#fff; border-radius:20px; width:100%;
+      max-width:620px; max-height:90vh; overflow:auto;
+      box-shadow:0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      padding:20px 24px; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center;
+      position:sticky; top:0; background:#fff; z-index:1;
+      background:linear-gradient(135deg,var(--deep),var(--saffron));
+    }
+    .modal-header h3 { font-size:1.1rem; color:#fff; }
+    .btn-close { background:rgba(255,255,255,0.2); border:none; font-size:1.2rem; cursor:pointer; color:#fff; width:32px; height:32px; border-radius:50%; }
+    .btn-close:hover { background:rgba(255,255,255,0.35); }
+    .modal-body { padding:24px; }
+
+    /* PROFILE */
+    .profile-top {
+      display:flex; gap:16px; align-items:center;
+      background:linear-gradient(135deg,#FFF8F0,#FDF6EC);
+      border-radius:14px; padding:20px; margin-bottom:20px;
+      border:1px solid var(--border);
+    }
+    .profile-avatar-lg {
+      width:72px; height:72px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,var(--saffron),var(--deep));
+      display:flex; align-items:center; justify-content:center;
+      font-size:2rem; color:#fff;
+    }
+    .profile-avatar-lg.female { background:linear-gradient(135deg,#E91E8C,#AD1457); }
+    .profile-name { font-size:1.3rem; font-weight:700; }
+    .profile-sub  { color:var(--subtext); font-size:0.88rem; margin-top:4px; }
+
+    /* DETAIL SECTIONS */
+    .detail-section { margin-bottom:20px; }
+    .detail-section h4 {
+      font-size:0.82rem; font-weight:700; color:var(--subtext);
+      text-transform:uppercase; letter-spacing:0.5px;
+      margin-bottom:12px; padding-bottom:8px;
+      border-bottom:1px solid var(--border);
+    }
+    .detail-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .detail-item .d-label { font-size:0.72rem; color:var(--subtext); font-weight:600; text-transform:uppercase; }
+    .detail-item .d-val   { font-size:0.9rem; color:var(--text); margin-top:3px; font-weight:500; }
+
+    /* RELATIONS */
+    .rel-list { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+    .rel-card {
+      background:#F9F5F0; border-radius:10px; padding:12px;
+      border:1px solid var(--border); display:flex; align-items:center; gap:10px;
+    }
+    .rel-avatar {
+      width:36px; height:36px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,var(--saffron),var(--deep));
+      display:flex; align-items:center; justify-content:center;
+      font-size:1rem; color:#fff;
+    }
+    .rel-name { font-weight:600; font-size:0.88rem; }
+    .rel-type { color:var(--subtext); font-size:0.75rem; margin-top:2px; }
+    .rel-badge { margin-left:auto; background:var(--saffron); color:#fff; padding:2px 8px; border-radius:20px; font-size:0.72rem; font-weight:600; flex-shrink:0; }
+
+    /* TABS */
+    .tabs { display:flex; gap:4px; background:#F0EBE3; border-radius:10px; padding:4px; margin-bottom:20px; }
+    .tab  { flex:1; padding:9px; text-align:center; border-radius:8px; cursor:pointer; font-size:0.88rem; font-weight:600; color:var(--subtext); transition:all 0.15s; }
+    .tab.active { background:#fff; color:var(--deep); box-shadow:0 2px 8px rgba(107,45,15,0.12); }
+
+    @media (max-width:640px) {
+      .members-grid { grid-template-columns:1fr; }
+      .detail-grid  { grid-template-columns:1fr 1fr; }
+      .rel-list     { grid-template-columns:1fr; }
+      .search-row   { flex-direction:column; }
+      .header-inner { flex-wrap:wrap; }
+      .nav-links    { width:100%; justify-content:flex-end; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-icon">🔍</div>
+    <div>
+      <h1>सदस्य खोजें</h1>
+      <p>GramParichay — Village Member Search</p>
+    </div>
+    <div class="nav-links">
+      <a href="/">📝 Register</a>
+      <a href="/admin">🔐 Admin</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- SEARCH CARD -->
+  <div class="search-card">
+    <h2>🔍 Kisi bhi member ko naam se dhundho</h2>
+    <div class="search-row">
+      <input
+        class="search-input" id="searchInput"
+        placeholder="Naam, pita ka naam, mobile number..."
+        oninput="searchMembers()"
+      />
+      <button class="btn-search" onclick="searchMembers()">खोजें</button>
+    </div>
+    <div class="filter-row">
+      <button class="filter-chip active" onclick="setFilter(this,'')"     >👥 Sabhi</button>
+      <button class="filter-chip"        onclick="setFilter(this,'Male')" >👨 Purush</button>
+      <button class="filter-chip"        onclick="setFilter(this,'Female')">👩 Mahila</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="resultCount"></div>
+  <div id="results"></div>
+
+</main>
+
+<!-- MEMBER DETAIL MODAL -->
+<div class="modal-overlay" id="memberModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>👤 Member Details</h3>
+      <button class="btn-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'tab-profile')">📋 Profile</div>
+        <div class="tab"        onclick="switchTab(this,'tab-family')">👨‍👩‍👧 Parivaar</div>
+      </div>
+      <div id="tab-profile"></div>
+      <div id="tab-family" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let activeFilter = '';
+
+// =====================
+// SEARCH
+// =====================
+async function searchMembers() {
+  const q = document.getElementById('searchInput').value.trim();
+  const url = `/api/members?search=${encodeURIComponent(q)}&gender=${activeFilter}`;
+  const r = await fetch(url);
+  const j = await r.json();
+  if (!j.success) return;
+  renderResults(j.data);
+}
+
+function setFilter(el, gender) {
+  activeFilter = gender;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  searchMembers();
+}
+
+// =====================
+// RENDER RESULTS
+// =====================
+function renderResults(members) {
+  const rc = document.getElementById('resultCount');
+  const container = document.getElementById('results');
+
+  if (!members.length) {
+    rc.textContent = '';
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🔍</div>
+        <h3>Koi member nahi mila</h3>
+        <p>Alag naam ya mobile number try karein</p>
+      </div>`;
+    return;
+  }
+
+  rc.textContent = `${members.length} member${members.length > 1 ? 's' : ''} mila`;
+  container.innerHTML = `<div class="members-grid">` +
+    members.map(m => `
+      <div class="member-card" onclick="viewMember(${m.id})">
+        <div class="member-avatar ${m.gender==='Female'?'female':''}">
+          ${m.gender==='Female'?'👩':m.gender==='Male'?'👨':'👤'}
+        </div>
+        <div class="member-info">
+          <div class="name">${m.full_name}</div>
+          <div class="father">${m.father_name ? 'पिता: '+m.father_name : ''}</div>
+          <div class="tags">
+            ${m.age        ? `<span class="tag tag-age">🎂 ${m.age} वर्ष</span>` : ''}
+            ${m.occupation ? `<span class="tag tag-occ">💼 ${m.occupation}</span>` : ''}
+            ${m.mohalla    ? `<span class="tag tag-mohalla">📍 ${m.mohalla}</span>` : ''}
+          </div>
+        </div>
+      </div>`).join('') + `</div>`;
+}
+
+// =====================
+// VIEW MEMBER
+// =====================
+async function viewMember(id) {
+  const [mRes, rRes] = await Promise.all([
+    fetch(`/api/members/${id}`),
+    fetch(`/api/members/${id}/relations`)
+  ]);
+  const mData = await mRes.json();
+  const rData = await rRes.json();
+  if (!mData.success) return;
+
+  const m = mData.data;
+  const isFemale = m.gender === 'Female';
+
+  // PROFILE TAB
+  document.getElementById('tab-profile').innerHTML = `
+    <div class="profile-top">
+      <div class="profile-avatar-lg ${isFemale?'female':''}">
+        ${isFemale?'👩':m.gender==='Male'?'👨':'👤'}
+      </div>
+      <div>
+        <div class="profile-name">${m.full_name}</div>
+        <div class="profile-sub">${[m.occupation, m.village].filter(Boolean).join(' | ')}</div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>👤 व्यक्तिगत जानकारी</h4>
+      <div class="detail-grid">
+        ${detailItem('पिता', m.father_name)}
+        ${detailItem('माता', m.mother_name)}
+        ${detailItem('उम्र', m.age ? m.age+' वर्ष' : null)}
+        ${detailItem('Gender', m.gender)}
+        ${detailItem('Marital Status', m.marital_status)}
+        ${detailItem('Blood Group', m.blood_group)}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>📞 संपर्क</h4>
+      <div class="detail-grid">
+        ${detailItem('Mobile', m.mobile)}
+        ${detailItem('Alt. Mobile', m.alternate_mobile)}
+        ${detailItem('Email', m.email)}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>🎓 शिक्षा और व्यवसाय</h4>
+      <div class="detail-grid">
+        ${detailItem('Education', m.education)}
+        ${detailItem('Occupation', m.occupation)}
+        ${detailItem('Income', m.income)}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>🏠 पता</h4>
+      <div class="detail-grid">
+        ${detailItem('House No.', m.house_no)}
+        ${detailItem('Mohalla', m.mohalla)}
+        ${detailItem('Village', m.village)}
+        ${detailItem('Tehsil', m.tehsil)}
+        ${detailItem('District', m.district)}
+        ${detailItem('State', m.state)}
+      </div>
+    </div>
+  `;
+
+  // FAMILY TAB
+  const relations = rData.success ? rData.data : [];
+  document.getElementById('tab-family').innerHTML = relations.length
+    ? `<div class="rel-list">` + relations.map(rel => `
+        <div class="rel-card">
+          <div class="rel-avatar">${rel.gender==='Female'?'👩':'👨'}</div>
+          <div>
+            <div class="rel-name">${rel.full_name}</div>
+            <div class="rel-type">${rel.occupation||'—'}</div>
+          </div>
+          <span class="rel-badge">${rel.relation_type}</span>
+        </div>`).join('') + `</div>`
+    : `<div style="text-align:center;padding:40px;color:var(--subtext)">
+        <div style="font-size:2.5rem">👨‍👩‍👧</div>
+        <p style="margin-top:10px">Koi family relation add nahi ki gayi abhi</p>
+      </div>`;
+
+  document.getElementById('memberModal').classList.add('open');
+}
+
+function detailItem(label, val) {
+  return `<div class="detail-item">
+    <div class="d-label">${label}</div>
+    <div class="d-val">${val || '—'}</div>
+  </div>`;
+}
+
+function closeModal() {
+  document.getElementById('memberModal').classList.remove('open');
+}
+function switchTab(el, tabId) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-profile').style.display = tabId==='tab-profile' ? 'block' : 'none';
+  document.getElementById('tab-family').style.display  = tabId==='tab-family'  ? 'block' : 'none';
+}
+
+// Close on overlay click
+document.getElementById('memberModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Initial load — sabhi members dikho
+searchMembers();
+</script>
+</body>
+</html>

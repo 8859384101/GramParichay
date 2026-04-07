@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ग्राम सदस्य पंजीकरण</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --saffron:   #E07B39;
+      --deep:      #6B2D0F;
+      --green:     #2E7D32;
+      --green-lt:  #43A047;
+      --cream:     #FDF6EC;
+      --white:     #FFFFFF;
+      --border:    #D9C5A8;
+      --text:      #2C1A0E;
+      --subtext:   #6B4C30;
+      --error:     #C62828;
+      --success:   #1B5E20;
+      --shadow:    0 4px 24px rgba(107,45,15,0.10);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, var(--deep) 0%, var(--saffron) 100%);
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M30 0L60 30L30 60L0 30z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .header-inner {
+      max-width: 900px; margin: 0 auto;
+      padding: 28px 24px;
+      display: flex; align-items: center; gap: 18px;
+      position: relative; z-index: 1;
+    }
+    .header-icon {
+      width: 64px; height: 64px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+    header h1 {
+      font-family: 'Tiro Devanagari Hindi', serif;
+      font-size: 1.7rem; color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    header p { color: rgba(255,255,255,0.85); font-size: 0.9rem; margin-top: 4px; }
+    .nav-links {
+      margin-left: auto; display: flex; gap: 12px; flex-shrink: 0;
+    }
+    .nav-links a {
+      background: rgba(255,255,255,0.2);
+      color: #fff; text-decoration: none;
+      padding: 8px 18px; border-radius: 20px;
+      font-size: 0.85rem; font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.3);
+      transition: background 0.2s;
+    }
+    .nav-links a:hover { background: rgba(255,255,255,0.35); }
+
+    /* MAIN FORM */
+    main { max-width: 900px; margin: 0 auto; padding: 36px 24px 60px; }
+
+    .form-card {
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    /* SECTION HEADER */
+    .section-hdr {
+      background: linear-gradient(90deg, var(--deep) 0%, #A0522D 100%);
+      color: #fff;
+      padding: 14px 28px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1rem; font-weight: 600; letter-spacing: 0.3px;
+    }
+    .section-hdr span { font-size: 1.2rem; }
+    .section-body { padding: 24px 28px; }
+
+    /* GRID */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+    .full-width { grid-column: 1 / -1; }
+
+    /* FORM FIELDS */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.82rem; font-weight: 600; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.5px; }
+    label .req { color: var(--error); margin-left: 3px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.92rem;
+      color: var(--text);
+      background: #FAFAFA;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--saffron);
+      box-shadow: 0 0 0 3px rgba(224,123,57,0.12);
+      background: #fff;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    select { cursor: pointer; }
+
+    /* SEPARATOR */
+    .sep { height: 1px; background: var(--border); margin: 4px 0 20px; }
+
+    /* SUBMIT BUTTON */
+    .submit-wrap { padding: 24px 28px; background: #FAFAF7; border-top: 1px solid var(--border); }
+    .btn-submit {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-lt) 100%);
+      color: #fff;
+      font-size: 1.05rem; font-weight: 700;
+      border: none; border-radius: 12px;
+      cursor: pointer; letter-spacing: 0.5px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 16px rgba(46,125,50,0.3);
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,125,50,0.4); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--text); color: #fff;
+      padding: 14px 28px; border-radius: 50px;
+      font-size: 0.92rem; font-weight: 500;
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 9999; white-space: nowrap;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.success { background: var(--green); }
+    #toast.error   { background: var(--error); }
+
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .header-inner { flex-wrap: wrap; }
+      .nav-links { width: 100%; justify-content: flex-end; }
+      .section-body { padding: 18px; }
+      .submit-wrap { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-icon">🏘️</div>
+    <div>
+      <h1>ग्राम सदस्य पंजीकरण</h1>
+      <p>Village Member Registration — अपनी जानकारी भरें</p>
+    </div>
+    <div class="nav-links">
+      <a href="/search">🔍 Search</a>
+      <a href="/admin">🔐 Admin</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <form id="memberForm" class="form-card" autocomplete="off">
+
+    <!-- SECTION 1: Personal Info -->
+    <div class="section-hdr"><span>👤</span> व्यक्तिगत जानकारी (Personal Info)</div>
+    <div class="section-body">
+      <div class="grid-2">
+        <div class="field">
+          <label>पूरा नाम (Full Name)<span class="req">*</span></label>
+          <input type="text" name="full_name" placeholder="जैसे: रमेश कुमार" required />
+        </div>
+        <div class="field">
+          <label>पिता का नाम (Father's Name)</label>
+          <input type="text" name="father_name" placeholder="पिता जी का नाम" />
+        </div>
+        <div class="field">
+          <label>माता का नाम (Mother's Name)</label>
+          <input type="text" name="mother_name" placeholder="माता जी का नाम" />
+        </div>
+        <div class="field">
+          <label>जन्म तिथि (Date of Birth)</label>
+          <input type="date" name="date_of_birth" />
+        </div>
+        <div class="field">
+          <label>उम्र (Age)</label>
+          <input type="number" name="age" placeholder="उम्र (साल में)" min="0" max="120" />
+        </div>
+        <div class="field">
+          <label>लिंग (Gender)<span class="req">*</span></label>
+          <select name="gender" required>
+            <option value="">— चुनें —</option>
+            <option value="Male">पुरुष (Male)</option>
+            <option value="Female">महिला (Female)</option>
+            <option value="Other">अन्य (Other)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>वैवाहिक स्थिति (Marital Status)</label>
+          <select name="marital_status">
+            <option value="Single">अविवाहित (Single)</option>
+            <option value="Married">विवाहित (Married)</option>
+            <option value="Widowed">विधवा/विधुर (Widowed)</option>
+            <option value="Divorced">तलाकशुदा (Divorced)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>रक्त समूह (Blood Group)</label>
+          <select name="blood_group">
+            <option value="">— चुनें —</option>
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>O+</option><option>O-</option>
+            <option>AB+</option><option>AB-</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: Contact -->
+    <div class="section-hdr"><span>📞</span> संपर्क जानकारी (Contact Info)</div>
+    <div class="section-body">
+      <div class="grid-2">
+        <div class="field">
+          <label>मोबाइल नंबर (Mobile)</label>
+          <input type="tel" name="mobile" placeholder="10 अंक का नंबर" maxlength="15" />
+        </div>
+        <div class="field">
+          <label>दूसरा नंबर (Alternate Mobile)</label>
+          <input type="tel" name="alternate_mobile" placeholder="वैकल्पिक नंबर" maxlength="15" />
+        </div>
+        <div class="field full-width">
+          <label>ईमेल (Email)</label>
+          <input type="email" name="email" placeholder="example@gmail.com" />
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: Education & Occupation -->
+    <div class="section-hdr"><span>🎓</span> शिक्षा और व्यवसाय (Education & Occupation)</div>
+    <div class="section-body">
+      <div class="grid-2">
+        <div class="field">
+          <label>शिक्षा (Education)</label>
+          <select name="education">
+            <option value="">— चुनें —</option>
+            <option>निरक्षर (Illiterate)</option>
+            <option>5वीं तक</option><option>8वीं तक</option>
+            <option>10वीं (High School)</option><option>12वीं (Intermediate)</option>
+            <option>स्नातक (Graduate)</option><option>परास्नातक (Post Graduate)</option>
+            <option>PhD / डॉक्टरेट</option><option>अन्य (Other)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>व्यवसाय (Occupation)</label>
+          <input type="text" name="occupation" placeholder="जैसे: किसान, व्यापारी, नौकरी..." />
+        </div>
+        <div class="field">
+          <label>मासिक आय (Monthly Income)</label>
+          <select name="income">
+            <option value="">— चुनें —</option>
+            <option>₹5000 से कम</option>
+            <option>₹5000-10000</option>
+            <option>₹10000-20000</option>
+            <option>₹20000-50000</option>
+            <option>₹50000 से अधिक</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>आधार नंबर (Aadhar No.)</label>
+          <input type="text" name="aadhar_no" placeholder="12 अंक का आधार नंबर" maxlength="20" />
+        </div>
+        <div class="field full-width">
+          <label>वोटर आईडी (Voter ID)</label>
+          <input type="text" name="voter_id" placeholder="Voter ID नंबर" maxlength="20" />
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: Address -->
+    <div class="section-hdr"><span>🏠</span> पता (Address)</div>
+    <div class="section-body">
+      <div class="grid-3">
+        <div class="field">
+          <label>मकान नंबर (House No.)</label>
+          <input type="text" name="house_no" placeholder="H-1, 23, आदि" />
+        </div>
+        <div class="field">
+          <label>मोहल्ला (Mohalla)</label>
+          <input type="text" name="mohalla" placeholder="मोहल्ला / गली" />
+        </div>
+        <div class="field">
+          <label>ग्राम (Village)</label>
+          <input type="text" name="village" placeholder="गांव का नाम" />
+        </div>
+        <div class="field">
+          <label>तहसील (Tehsil)</label>
+          <input type="text" name="tehsil" placeholder="तहसील" />
+        </div>
+        <div class="field">
+          <label>जिला (District)</label>
+          <input type="text" name="district" placeholder="जिला" />
+        </div>
+        <div class="field">
+          <label>राज्य (State)</label>
+          <input type="text" name="state" placeholder="उत्तर प्रदेश..." />
+        </div>
+        <div class="field">
+          <label>पिनकोड (Pincode)</label>
+          <input type="text" name="pincode" placeholder="6 अंक" maxlength="10" />
+        </div>
+        <div class="field full-width">
+          <label>अतिरिक्त जानकारी (Notes)</label>
+          <textarea name="notes" placeholder="कोई अन्य जानकारी..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="submit-wrap">
+      <button type="submit" class="btn-submit" id="submitBtn">
+        ✅ पंजीकरण करें — Register Member
+      </button>
+    </div>
+  </form>
+</main>
+
+<div id="toast"></div>
+
+<script>
+  const form = document.getElementById('memberForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const toast = document.getElementById('toast');
+
+  function showToast(msg, type = 'success') {
+    toast.textContent = msg;
+    toast.className = `show ${type}`;
+    setTimeout(() => { toast.className = ''; }, 3500);
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Submit हो रहा है...';
+
+    const data = {};
+    new FormData(form).forEach((val, key) => { if (val) data[key] = val; });
+
+    try {
+      const res  = await fetch('/api/members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      if (json.success) {
+        showToast(`✅ ${json.message} (ID: ${json.id})`, 'success');
+        form.reset();
+      } else {
+        showToast(`❌ ${json.error}`, 'error');
+      }
+    } catch (err) {
+      showToast('❌ Server se connection nahi hua!', 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '✅ पंजीकरण करें — Register Member';
+    }
+  });
+
+  // Auto-calculate age from DOB
+  document.querySelector('[name="date_of_birth"]').addEventListener('change', function() {
+    const dob = new Date(this.value);
+    if (!isNaN(dob)) {
+      const age = Math.floor((Date.now() - dob) / (365.25 * 24 * 3600 * 1000));
+      document.querySelector('[name="age"]').value = age;
+    }
+  });
+</script>
+</body>
+</html>

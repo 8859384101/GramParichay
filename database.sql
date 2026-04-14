@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS members (
   aadhar_no       VARCHAR(20),
   voter_id        VARCHAR(20),
   house_no        VARCHAR(20),
-  mohalla         VARCHAR(100),
+  Bakali         VARCHAR(100),
   village         VARCHAR(100) DEFAULT 'My Village',
   tehsil          VARCHAR(100),
   district        VARCHAR(100),
@@ -76,11 +76,11 @@ INSERT INTO admins (username, password) VALUES ('admin', 'admin123');
 -- -----------------------------------------------
 -- SAMPLE DATA (optional - delete if not needed)
 -- -----------------------------------------------
-INSERT INTO members (full_name, father_name, mother_name, age, gender, marital_status, mobile, occupation, house_no, mohalla, village, district, state) VALUES
-('Ramesh Kumar',    'Shyam Lal',    'Devi Devi',   55, 'Male',   'Married', '9876500001', 'Farmer',   'H-1', 'Main Mohalla', 'My Village', 'Ghaziabad', 'Uttar Pradesh'),
-('Sunita Devi',     'Hari Ram',     'Kamla Devi',  50, 'Female', 'Married', '9876500002', 'Housewife','H-1', 'Main Mohalla', 'My Village', 'Ghaziabad', 'Uttar Pradesh'),
-('Rahul Kumar',     'Ramesh Kumar', 'Sunita Devi', 28, 'Male',   'Single',  '9876500003', 'Student',  'H-1', 'Main Mohalla', 'My Village', 'Ghaziabad', 'Uttar Pradesh'),
-('Priya Kumari',    'Ramesh Kumar', 'Sunita Devi', 24, 'Female', 'Single',  '9876500004', 'Teacher',  'H-1', 'Main Mohalla', 'My Village', 'Ghaziabad', 'Uttar Pradesh');
+INSERT INTO members (full_name, father_name, mother_name, age, gender, marital_status, mobile, occupation, house_no, Bakali, village, district, state) VALUES
+('Ramesh Kumar',    'Shyam Lal',    'Devi Devi',   55, 'Male',   'Married', '9876500001', 'Farmer',   'H-1', 'Main Bakhali', 'My Village', 'Ghaziabad', 'Uttar Pradesh'),
+('Sunita Devi',     'Hari Ram',     'Kamla Devi',  50, 'Female', 'Married', '9876500002', 'Housewife','H-1', 'Main Bakhali', 'My Village', 'Ghaziabad', 'Uttar Pradesh'),
+('Rahul Kumar',     'Ramesh Kumar', 'Sunita Devi', 28, 'Male',   'Single',  '9876500003', 'Student',  'H-1', 'Main Bakhali', 'My Village', 'Ghaziabad', 'Uttar Pradesh'),
+('Priya Kumari',    'Ramesh Kumar', 'Sunita Devi', 24, 'Female', 'Single',  '9876500004', 'Teacher',  'H-1', 'Main Bakhali', 'My Village', 'Ghaziabad', 'Uttar Pradesh');
 
 -- Sample relations: Ramesh=1 ki wife Sunita=2, beta Rahul=3, beti Priya=4
 INSERT INTO relations (member_id, related_id, relation_type) VALUES

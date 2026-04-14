@@ -1,6 +1,7 @@
 // =============================================
 // VILLAGE DATABASE - Node.js Backend (server.js)
 // =============================================
+require('dotenv').config();
 const express    = require('express');
 const mysql      = require('mysql2');
 const cors       = require('cors');
@@ -16,10 +17,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // MySQL Connection — apna password daalo
 // -----------------------------------------------
 const db = mysql.createConnection({
-  host:     'localhost',
-  user:     'root',
-  password: 'Mohit@2636',  // <-- CHANGE THIS
-  database: 'village_db'
+  host:     process.env.DB_HOST     || 'localhost',
+  user:     process.env.DB_USER     || 'root',
+  password: process.env.DB_PASSWORD || 'tumhara_password',
+  database: process.env.DB_NAME     || 'village_db',
+  port:     process.env.DB_PORT     || 3306
 });
 
 db.connect(err => {
@@ -78,7 +80,7 @@ app.post('/api/members', (req, res) => {
     full_name, father_name, mother_name, date_of_birth, age, gender,
     marital_status, mobile, alternate_mobile, email, education,
     occupation, income, blood_group, aadhar_no, voter_id,
-    house_no, mohalla, village, tehsil, district, state, pincode,
+    house_no, Bakali, village, tehsil, district, state, pincode,
     photo_url, notes
   } = req.body;
 
@@ -90,7 +92,7 @@ app.post('/api/members', (req, res) => {
     (full_name, father_name, mother_name, date_of_birth, age, gender,
      marital_status, mobile, alternate_mobile, email, education,
      occupation, income, blood_group, aadhar_no, voter_id,
-     house_no, mohalla, village, tehsil, district, state, pincode,
+     house_no, Bakali, village, tehsil, district, state, pincode,
      photo_url, notes)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
@@ -98,7 +100,7 @@ app.post('/api/members', (req, res) => {
     full_name, father_name, mother_name, date_of_birth || null, age,
     gender, marital_status, mobile, alternate_mobile, email, education,
     occupation, income, blood_group, aadhar_no, voter_id,
-    house_no, mohalla, village || 'My Village', tehsil, district, state, pincode,
+    house_no, Bakali, village || 'My Village', tehsil, district, state, pincode,
     photo_url, notes
   ];
 
@@ -114,7 +116,7 @@ app.put('/api/members/:id', (req, res) => {
     'full_name','father_name','mother_name','date_of_birth','age','gender',
     'marital_status','mobile','alternate_mobile','email','education',
     'occupation','income','blood_group','aadhar_no','voter_id',
-    'house_no','mohalla','village','tehsil','district','state','pincode',
+    'house_no','Bakali','village','tehsil','district','state','pincode',
     'photo_url','notes','is_active'
   ];
   
@@ -154,7 +156,7 @@ app.get('/api/members/:id/relations', (req, res) => {
       r.notes        AS relation_notes,
       m.id, m.full_name, m.age, m.gender,
       m.mobile, m.occupation, m.photo_url,
-      m.house_no, m.mohalla
+      m.house_no, m.Bakali
     FROM relations r
     JOIN members m ON m.id = r.related_id
     WHERE r.member_id = ? AND m.is_active = 1
@@ -205,7 +207,7 @@ app.get('/api/stats', (req, res) => {
     male:     'SELECT COUNT(*) as count FROM members WHERE gender="Male" AND is_active=1',
     female:   'SELECT COUNT(*) as count FROM members WHERE gender="Female" AND is_active=1',
     married:  'SELECT COUNT(*) as count FROM members WHERE marital_status="Married" AND is_active=1',
-    mohallas: 'SELECT mohalla, COUNT(*) as count FROM members WHERE is_active=1 GROUP BY mohalla ORDER BY count DESC'
+    Bakalis: 'SELECT Bakali, COUNT(*) as count FROM members WHERE is_active=1 GROUP BY Bakali ORDER BY count DESC'
   };
 
   const results = {};
@@ -215,7 +217,7 @@ app.get('/api/stats', (req, res) => {
   keys.forEach(key => {
     db.query(queries[key], (err, rows) => {
       if (!err) {
-        results[key] = key === 'mohallas' ? rows : rows[0].count;
+        results[key] = key === 'Bakalis' ? rows : rows[0].count;
       }
       if (++done === keys.length) {
         res.json({ success: true, data: results });

@@ -105,7 +105,7 @@
     }
     .tag-age      { background:#FFF3E0; color:#E65100; }
     .tag-occ      { background:#E8F5E9; color:#2E7D32; }
-    .tag-mohalla  { background:#E3F2FD; color:#1565C0; }
+    .tag-Bakali  { background:#E3F2FD; color:#1565C0; }
 
     /* EMPTY STATE */
     .empty-state {
@@ -313,7 +313,7 @@ function renderResults(members) {
           <div class="tags">
             ${m.age        ? `<span class="tag tag-age">🎂 ${m.age} वर्ष</span>` : ''}
             ${m.occupation ? `<span class="tag tag-occ">💼 ${m.occupation}</span>` : ''}
-            ${m.mohalla    ? `<span class="tag tag-mohalla">📍 ${m.mohalla}</span>` : ''}
+            ${m.Bakali    ? `<span class="tag tag-Bakali">📍 ${m.Bakali}</span>` : ''}
           </div>
         </div>
       </div>`).join('') + `</div>`;
@@ -380,7 +380,7 @@ async function viewMember(id) {
       <h4>🏠 पता</h4>
       <div class="detail-grid">
         ${detailItem('House No.', m.house_no)}
-        ${detailItem('Mohalla', m.mohalla)}
+        ${detailItem('Bakhali', m.Bakali)}
         ${detailItem('Village', m.village)}
         ${detailItem('Tehsil', m.tehsil)}
         ${detailItem('District', m.district)}

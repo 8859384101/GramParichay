@@ -313,11 +313,11 @@
       </div>
       <div class="table-card">
         <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-weight:600;font-size:0.95rem">
-          📍 Mohalla-wise Members
+          📍 Bakhali-wise Members
         </div>
         <table>
-          <thead><tr><th>Mohalla</th><th>Members</th></tr></thead>
-          <tbody id="mohallaTable"><tr><td colspan="2" style="text-align:center;color:var(--subtext)">Loading...</td></tr></tbody>
+          <thead><tr><th>Bakhali</th><th>Members</th></tr></thead>
+          <tbody id="bakhaliTable"><tr><td colspan="2" style="text-align:center;color:var(--subtext)">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -343,7 +343,7 @@
           <thead>
             <tr>
               <th>ID</th><th>नाम (Name)</th><th>पिता</th><th>उम्र</th>
-              <th>Gender</th><th>Mobile</th><th>Mohalla</th>
+              <th>Gender</th><th>Mobile</th><th>Bakhali</th>
               <th>Occupation</th><th>Actions</th>
             </tr>
           </thead>
@@ -487,7 +487,7 @@ const EDIT_FIELDS = [
   {name:'aadhar_no',    label:'Aadhar No.',      type:'text'},
   {name:'voter_id',     label:'Voter ID',        type:'text'},
   {name:'house_no',     label:'House No.',       type:'text'},
-  {name:'mohalla',      label:'Mohalla',         type:'text'},
+  {name:'Bakali',      label:'Bakali',         type:'text'},
   {name:'village',      label:'Village',         type:'text'},
   {name:'tehsil',       label:'Tehsil',          type:'text'},
   {name:'district',     label:'District',        type:'text'},
@@ -546,9 +546,9 @@ async function loadStats() {
   document.getElementById('statMale').textContent    = j.data.male;
   document.getElementById('statFemale').textContent  = j.data.female;
   document.getElementById('statMarried').textContent = j.data.married;
-  const tbody = document.getElementById('mohallaTable');
-  tbody.innerHTML = (j.data.mohallas||[]).map(m =>
-    `<tr><td>${m.mohalla||'—'}</td><td><strong>${m.count}</strong></td></tr>`
+  const tbody = document.getElementById('bakhaliTable');
+  tbody.innerHTML = (j.data.Bakalis||[]).map(m =>
+    `<tr><td>${m.Bakali||'—'}</td><td><strong>${m.count}</strong></td></tr>`
   ).join('') || '<tr><td colspan="2" style="text-align:center;color:var(--subtext)">No data</td></tr>';
 }
 
@@ -577,7 +577,7 @@ async function loadMembers() {
       <td>${m.age||'—'}</td>
       <td><span class="badge badge-${m.gender?.toLowerCase()||'other'}">${m.gender||'—'}</span></td>
       <td>${m.mobile||'—'}</td>
-      <td>${m.mohalla||'—'}</td>
+      <td>${m.Bakali||'—'}</td>
       <td>${m.occupation||'—'}</td>
       <td>
         <div class="actions">
@@ -611,7 +611,7 @@ async function viewMember(id) {
     ['Mobile',m.mobile||'—'],['Alt. Mobile',m.alternate_mobile||'—'],['Email',m.email||'—'],
     ['Education',m.education||'—'],['Occupation',m.occupation||'—'],['Income',m.income||'—'],
     ['Aadhar',m.aadhar_no||'—'],['Voter ID',m.voter_id||'—'],['DOB',m.date_of_birth?m.date_of_birth.split('T')[0]:'—'],
-    ['House No.',m.house_no||'—'],['Mohalla',m.mohalla||'—'],['Village',m.village||'—'],
+    ['House No.',m.house_no||'—'],['Bakali',m.bakali||'—'],['Village',m.village||'—'],
     ['Tehsil',m.tehsil||'—'],['District',m.district||'—'],['State',m.state||'—']
   ];
   document.getElementById('viewDetails').innerHTML = fields.map(([l,v])=>`

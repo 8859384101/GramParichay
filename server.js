@@ -17,11 +17,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // MySQL Connection — apna password daalo
 // -----------------------------------------------
 const db = mysql.createConnection({
-  host:     process.env.DB_HOST     || 'localhost',
-  user:     process.env.DB_USER     || 'root',
-  password: process.env.DB_PASSWORD || 'Mohit@2636',
-  database: process.env.DB_NAME     || 'village_db',
-  port:     process.env.DB_PORT     || 3306
+  host:     process.env.MYSQLHOST     || 'mysql-huyu.railway.internal',
+  user:     process.env.MYSQLUSER     || 'root',
+  password: process.env.MYSQLPASSWORD || 'lZoIZPRQgbyaGDQZilpDUMefoBAjJtiN',
+  database: process.env.MYSQLDATABASE     || 'village_db',
+  port:     process.env.MYSQLPORT      || 3306
 });
 
 db.connect(err => {

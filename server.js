@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const db = mysql.createConnection({
   host:     process.env.DB_HOST     || 'localhost',
   user:     process.env.DB_USER     || 'root',
-  password: process.env.DB_PASSWORD || 'tumhara_password',
+  password: process.env.DB_PASSWORD || 'Mohit@2636',
   database: process.env.DB_NAME     || 'village_db',
   port:     process.env.DB_PORT     || 3306
 });

@@ -125,6 +125,13 @@
     textarea { resize: vertical; min-height: 80px; }
     select { cursor: pointer; }
 
+    /* readonly style */
+    input[readonly] {
+      background: #F0EBE3;
+      color: var(--subtext);
+      cursor: not-allowed;
+    }
+
     /* SEPARATOR */
     .sep { height: 1px; background: var(--border); margin: 4px 0 20px; }
 
@@ -310,30 +317,48 @@
           <label>मकान नंबर (House No.)</label>
           <input type="text" name="house_no" placeholder="H-1, 23, आदि" />
         </div>
+
+        <!-- ✅ BAKHALI DROPDOWN - FIXED -->
         <div class="field">
-          <label>बाखली (Bakhali)</label>
-          <input type="text" name="Bakali" placeholder="मोहल्ला / गली" />
+          <label>बाखली (Bakhali)<span class="req">*</span></label>
+          <select name="mohalla" required>
+            <option value="">— बाखली चुनें —</option>
+            <option value="Tallabakhali">तल्लाबाखली</option>
+            <option value="Mallabakhali">मल्लाबाखली</option>
+            <option value="Pallabakhali">पल्लाबाखली</option>
+          </select>
         </div>
+
+        <!-- ✅ VILLAGE DEFAULT = Kotar -->
         <div class="field">
           <label>ग्राम (Village)</label>
-          <input type="text" name="village" placeholder="गांव का नाम" />
+          <input type="text" name="village" value="Kotar" readonly />
         </div>
+
+        <!-- ✅ TEHSIL DEFAULT = Ranikhet -->
         <div class="field">
           <label>तहसील (Tehsil)</label>
-          <input type="text" name="tehsil" placeholder="तहसील" />
+          <input type="text" name="tehsil" value="Ranikhet" readonly />
         </div>
+
+        <!-- ✅ DISTRICT DEFAULT = Almora -->
         <div class="field">
           <label>जिला (District)</label>
-          <input type="text" name="district" placeholder="जिला" />
+          <input type="text" name="district" value="Almora" readonly />
         </div>
+
+        <!-- ✅ STATE DEFAULT = Uttarakhand -->
         <div class="field">
           <label>राज्य (State)</label>
-          <input type="text" name="state" placeholder="उत्तर प्रदेश..." />
+          <input type="text" name="state" value="Uttarakhand" readonly />
         </div>
+
+        <!-- ✅ PINCODE DEFAULT = 263663 -->
         <div class="field">
           <label>पिनकोड (Pincode)</label>
-          <input type="text" name="pincode" placeholder="6 अंक" maxlength="10" />
+          <input type="text" name="pincode" value="263663" readonly />
         </div>
+
         <div class="field full-width">
           <label>अतिरिक्त जानकारी (Notes)</label>
           <textarea name="notes" placeholder="कोई अन्य जानकारी..."></textarea>
@@ -381,6 +406,12 @@
       if (json.success) {
         showToast(`✅ ${json.message} (ID: ${json.id})`, 'success');
         form.reset();
+        // Reset readonly fields back to defaults after form reset
+        document.querySelector('[name="village"]').value = 'Kotar';
+        document.querySelector('[name="tehsil"]').value = 'Ranikhet';
+        document.querySelector('[name="district"]').value = 'Almora';
+        document.querySelector('[name="state"]').value = 'Uttarakhand';
+        document.querySelector('[name="pincode"]').value = '263663';
       } else {
         showToast(`❌ ${json.error}`, 'error');
       }

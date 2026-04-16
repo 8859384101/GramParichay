@@ -80,7 +80,7 @@ app.post('/api/members', (req, res) => {
     full_name, father_name, mother_name, date_of_birth, age, gender,
     marital_status, mobile, alternate_mobile, email, education,
     occupation, income, blood_group, aadhar_no, voter_id,
-    house_no, Bakali, village, tehsil, district, state, pincode,
+    house_no, Bakhali, village, tehsil, district, state, pincode,
     photo_url, notes
   } = req.body;
 

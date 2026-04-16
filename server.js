@@ -92,7 +92,7 @@ app.post('/api/members', (req, res) => {
     (full_name, father_name, mother_name, date_of_birth, age, gender,
      marital_status, mobile, alternate_mobile, email, education,
      occupation, income, blood_group, aadhar_no, voter_id,
-     house_no, Bakali, village, tehsil, district, state, pincode,
+     house_no, Bakhali, village, tehsil, district, state, pincode,
      photo_url, notes)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 
@@ -100,7 +100,7 @@ app.post('/api/members', (req, res) => {
     full_name, father_name, mother_name, date_of_birth || null, age,
     gender, marital_status, mobile, alternate_mobile, email, education,
     occupation, income, blood_group, aadhar_no, voter_id,
-    house_no, Bakali, village || 'My Village', tehsil, district, state, pincode,
+    house_no, Bakhali, village || 'My Village', tehsil, district, state, pincode,
     photo_url, notes
   ];
 
@@ -116,7 +116,7 @@ app.put('/api/members/:id', (req, res) => {
     'full_name','father_name','mother_name','date_of_birth','age','gender',
     'marital_status','mobile','alternate_mobile','email','education',
     'occupation','income','blood_group','aadhar_no','voter_id',
-    'house_no','Bakali','village','tehsil','district','state','pincode',
+    'house_no','Bakhali','village','tehsil','district','state','pincode',
     'photo_url','notes','is_active'
   ];
   
@@ -156,7 +156,7 @@ app.get('/api/members/:id/relations', (req, res) => {
       r.notes        AS relation_notes,
       m.id, m.full_name, m.age, m.gender,
       m.mobile, m.occupation, m.photo_url,
-      m.house_no, m.Bakali
+      m.house_no, m.Bakhali
     FROM relations r
     JOIN members m ON m.id = r.related_id
     WHERE r.member_id = ? AND m.is_active = 1
@@ -207,7 +207,7 @@ app.get('/api/stats', (req, res) => {
     male:     'SELECT COUNT(*) as count FROM members WHERE gender="Male" AND is_active=1',
     female:   'SELECT COUNT(*) as count FROM members WHERE gender="Female" AND is_active=1',
     married:  'SELECT COUNT(*) as count FROM members WHERE marital_status="Married" AND is_active=1',
-    Bakalis: 'SELECT Bakali, COUNT(*) as count FROM members WHERE is_active=1 GROUP BY Bakali ORDER BY count DESC'
+    Bakhalis: 'SELECT Bakhali, COUNT(*) as count FROM members WHERE is_active=1 GROUP BY Bakhali ORDER BY count DESC'
   };
 
   const results = {};
@@ -217,7 +217,7 @@ app.get('/api/stats', (req, res) => {
   keys.forEach(key => {
     db.query(queries[key], (err, rows) => {
       if (!err) {
-        results[key] = key === 'Bakalis' ? rows : rows[0].count;
+        results[key] = key === 'Bakhalis' ? rows : rows[0].count;
       }
       if (++done === keys.length) {
         res.json({ success: true, data: results });

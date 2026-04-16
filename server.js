@@ -14,14 +14,14 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // -----------------------------------------------
-// MySQL Connection — apna password daalo
+// MySQL Connection
 // -----------------------------------------------
 const db = mysql.createConnection({
   host:     process.env.MYSQLHOST     || 'mysql-huyu.railway.internal',
   user:     process.env.MYSQLUSER     || 'root',
   password: process.env.MYSQLPASSWORD || 'lZoIZPRQgbyaGDQZilpDUMefoBAjJtiN',
-  database: process.env.MYSQLDATABASE     || 'village_db',
-  port:     process.env.MYSQLPORT      || 3306
+  database: process.env.MYSQLDATABASE || 'village_db',
+  port:     process.env.MYSQLPORT     || 3306
 });
 
 db.connect(err => {
@@ -35,17 +35,17 @@ db.connect(err => {
 // =============================================
 // ROUTES: Serve HTML pages
 // =============================================
-app.get('/',        (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/admin',   (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
-app.get('/search',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'search.html')));
+app.get('/',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/admin',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/search', (req, res) => res.sendFile(path.join(__dirname, 'public', 'search.html')));
 
 // =============================================
 // API 1: MEMBERS — CRUD
 // =============================================
 
-// GET all members (with optional search)
+// GET all members (with optional search + limit for AI bot)
 app.get('/api/members', (req, res) => {
-  const { search, gender, village } = req.query;
+  const { search, gender, village, limit } = req.query;
   let sql = 'SELECT * FROM members WHERE is_active = 1';
   const params = [];
 
@@ -59,6 +59,11 @@ app.get('/api/members', (req, res) => {
 
   sql += ' ORDER BY full_name ASC';
 
+  if (limit) {
+    sql += ' LIMIT ?';
+    params.push(parseInt(limit));
+  }
+
   db.query(sql, params, (err, rows) => {
     if (err) return res.status(500).json({ success: false, error: err.message });
     res.json({ success: true, data: rows, total: rows.length });
@@ -71,6 +76,83 @@ app.get('/api/members/:id', (req, res) => {
     if (err) return res.status(500).json({ success: false, error: err.message });
     if (rows.length === 0) return res.status(404).json({ success: false, error: 'Member not found' });
     res.json({ success: true, data: rows[0] });
+  });
+});
+
+// =============================================
+// API 1-A: SAAS-SASUR — Pati ke ID se maa-baap
+// URL: GET /api/members/:id/parents
+// Use: Ladki registration form mein pati select karne pe
+// =============================================
+app.get('/api/members/:id/parents', (req, res) => {
+  const memberId = req.params.id;
+
+  // Pehle member ki khud ki details lo
+  const memberQuery = `
+    SELECT id, full_name, father_name, mother_name, gender, Bakhali, village
+    FROM members
+    WHERE id = ? AND is_active = 1
+  `;
+
+  db.query(memberQuery, [memberId], (err, memberResult) => {
+    if (err) return res.status(500).json({ success: false, error: err.message });
+    if (!memberResult.length) return res.status(404).json({ success: false, error: 'Member nahi mila' });
+
+    const member = memberResult[0];
+
+    // Relations table se bhi parents dhundho
+    const relationsQuery = `
+      SELECT m.id, m.full_name, m.mobile, m.gender, r.relation_type
+      FROM relations r
+      JOIN members m ON m.id = r.related_id
+      WHERE r.member_id = ?
+        AND r.relation_type IN ('father', 'mother')
+        AND m.is_active = 1
+    `;
+
+    db.query(relationsQuery, [memberId], (err2, relResults) => {
+      if (err2) return res.status(500).json({ success: false, error: err2.message });
+
+      res.json({
+        success: true,
+        member: {
+          id: member.id,
+          full_name: member.full_name,
+          gender: member.gender,
+          Bakhali: member.Bakhali,
+          village: member.village
+        },
+        // Direct columns se (father_name, mother_name)
+        father_name_direct: member.father_name || null,
+        mother_name_direct: member.mother_name || null,
+        // Relations table se linked members
+        relations_parents: relResults
+      });
+    });
+  });
+});
+
+// =============================================
+// API 1-B: NAAM SE SEARCH — AI Bot ke liye
+// URL: GET /api/members/search-by-name?name=Ram Kumar
+// =============================================
+app.get('/api/search-by-name', (req, res) => {
+  const name = req.query.name || '';
+  if (!name) return res.status(400).json({ success: false, error: 'Name do' });
+
+  const sql = `
+    SELECT id, full_name, father_name, mother_name, spouse_name,
+           mobile, gender, age, Bakhali, village, occupation,
+           marital_status, blood_group, education
+    FROM members
+    WHERE (full_name LIKE ? OR father_name LIKE ? OR spouse_name LIKE ?)
+      AND is_active = 1
+    LIMIT 5
+  `;
+
+  db.query(sql, [`%${name}%`, `%${name}%`, `%${name}%`], (err, results) => {
+    if (err) return res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, data: results });
   });
 });
 
@@ -100,7 +182,7 @@ app.post('/api/members', (req, res) => {
     full_name, father_name, mother_name, date_of_birth || null, age,
     gender, marital_status, mobile, alternate_mobile, email, education,
     occupation, income, blood_group, aadhar_no, voter_id,
-    house_no, Bakhali, village || 'My Village', tehsil, district, state, pincode,
+    house_no, Bakhali, village || 'Kotar', tehsil, district, state, pincode,
     photo_url, notes
   ];
 
@@ -119,7 +201,7 @@ app.put('/api/members/:id', (req, res) => {
     'house_no','Bakhali','village','tehsil','district','state','pincode',
     'photo_url','notes','is_active'
   ];
-  
+
   const updates = {};
   allowedFields.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
 
@@ -147,7 +229,7 @@ app.delete('/api/members/:id', (req, res) => {
 // API 2: RELATIONS — Family Tree
 // =============================================
 
-// GET all relations of a member (with related member's details)
+// GET all relations of a member
 app.get('/api/members/:id/relations', (req, res) => {
   const sql = `
     SELECT 
@@ -227,7 +309,7 @@ app.get('/api/stats', (req, res) => {
 });
 
 // =============================================
-// API 4: ADMIN LOGIN (simple)
+// API 4: ADMIN LOGIN
 // =============================================
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;

@@ -187,10 +187,4 @@ Password: admin123
 
 This project is licensed under the [MIT License](LICENSE).
 
----
-
-## 👨‍💻 Developer
-
-Made with ❤️ for village community management.
-
 > *"हर गाँव की अपनी पहचान — GramParichay"*
